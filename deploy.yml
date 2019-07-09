@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: connect-next-app
+  namespace: connect-dev
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: connect-next-app
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: connect-next-app
+    spec:
+      containers:
+        - name: connect-next-app
+          image: docker-registry.eng.gomycode.co:443/gomycode/connect-next-dev:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5004
+          env:
+            - name: NODE_ENV
+              value: "dev"
+      imagePullSecrets:
+        - name: gomycode-registry-creds
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: connect-next-app
+  namespace: connect-dev
+  labels:
+    app: connect-next-app
+spec:
+  ports:
+    - name: http
+      port: 5004
+      protocol: TCP
+      targetPort: 5004
+  selector:
+    app: connect-next-app
+  type: ClusterIP
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: connect-next-app
+  namespace: connect-dev
+spec:
+  tls:
+    - hosts:
+        - connect.gomycode.co
+      secretName: default-tls-gomycode-co
+  rules:
+    - host: connect.gomycode.co
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: connect-next-app
+              servicePort: 5004

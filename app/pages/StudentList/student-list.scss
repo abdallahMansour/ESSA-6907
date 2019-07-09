@@ -1,0 +1,13 @@
+.student-list{
+display: flex;
+flex-wrap: wrap;
+justify-content: space-around;
+.add-button{
+    position: absolute;
+    right: 50px;
+    bottom: 80px;
+}
+.false{
+    display: none
+}
+}
